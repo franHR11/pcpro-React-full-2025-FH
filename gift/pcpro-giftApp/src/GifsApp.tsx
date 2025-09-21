@@ -17,7 +17,7 @@ export const GifsApp = () => {
             {/* Header */}
 
             <CustomHeader
-                title="Buscador de Gifs"
+                title="Pcpro - Buscador de Gifs"
                 description="Descubre y comparte el Gif perfecto"
             />
 
