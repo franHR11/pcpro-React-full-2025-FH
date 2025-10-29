@@ -1,0 +1,44 @@
+import { Link, useLocation } from "react-router"
+import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "../ui/navigation-menu"
+import { cn } from "@/lib/utils"
+
+
+export const CustonMenu = () => {
+
+    const { pathname } = useLocation()
+
+    const isActive = (path: string) => {
+        return pathname === path
+    }
+
+    return (
+        <NavigationMenu className="py-5">
+            <NavigationMenuList>
+
+                {/* Home */}
+
+                <NavigationMenuItem>
+                    <NavigationMenuLink asChild
+                        className={cn(isActive('/') && "bg-slate-200 ", 'p-2 rounded-lg')}
+                    >
+                        <Link to="/">Inicio</Link>
+                    </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                {/* Busqueda */}
+
+                <NavigationMenuItem>
+                    <NavigationMenuLink asChild
+                        className={cn(isActive('/search') && "bg-slate-200 ", 'p-2 rounded-lg')}
+                    >
+                        <Link to="/search">Buscar</Link>
+                    </NavigationMenuLink>
+                </NavigationMenuItem>
+
+            </NavigationMenuList>
+
+        </NavigationMenu>
+    )
+
+
+}
