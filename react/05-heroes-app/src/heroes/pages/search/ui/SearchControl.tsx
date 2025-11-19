@@ -20,7 +20,7 @@ export const SearchControl = () => {
 
 
   const activeAccordion = searchParams.get('active-accordion') ?? ''
-  const fuerza = Number(searchParams.get('fuerza') ?? '0')
+  const strength = Number(searchParams.get('strength') ?? '0')
 
   const setQueryParams = (name: string, value: string) => {
     setSearchParams(prev => {
@@ -129,9 +129,9 @@ export const SearchControl = () => {
                 </div>
               </div>
               <div className="mt-4">
-                <label className="text-sm font-medium">Fuerza mínima: {fuerza}/10</label>
-                <Slider defaultValue={[fuerza]}
-                  onValueChange={value => setQueryParams('fuerza', value[0].toString())}
+                <label className="text-sm font-medium">Fuerza mínima: {strength}/10</label>
+                <Slider defaultValue={[strength]}
+                  onValueChange={value => setQueryParams('strength', value[0].toString())}
                   max={10} step={1} />
               </div>
             </div>

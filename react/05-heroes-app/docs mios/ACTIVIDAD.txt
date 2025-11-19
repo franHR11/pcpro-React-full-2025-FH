@@ -1,0 +1,4 @@
+Modo Investigación: ON
+Modo Memoria: ON
+
+Se ha corregido el parámetro `strength` en `SearchPage` y `SearchControl` para que la fuerza mínima se envíe correctamente a la acción `searchHeroesAction`. También se creó la carpeta `docs/` con la documentación requerida (README, MEMORIAS, CONEXIONES_BD y CHECKLIST_RUTAS).

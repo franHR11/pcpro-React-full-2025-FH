@@ -1,0 +1,1 @@
+import{a as o,j as r}from"./index-BN-X9g5-.js";const i=()=>{const t=o.c(1);let e;return t[0]===Symbol.for("react.memo_cache_sentinel")?(e=r.jsx("div",{children:"AdminPage"}),t[0]=e):e=t[0],e};export{i as AdminPage,i as default};

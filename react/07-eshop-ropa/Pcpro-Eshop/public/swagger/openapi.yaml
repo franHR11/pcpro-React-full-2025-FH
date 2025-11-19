@@ -1,0 +1,1196 @@
+openapi: 3.0.3
+info:
+  title: Teslo RESTFul API
+  description: Teslo shop endpoints
+  version: '1.0.0'
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local Teslo API
+
+tags:
+  - name: Auth
+    description: Endpoints de autenticación y usuarios
+  - name: Products
+    description: Gestión de productos de la tienda
+  - name: Files - Get and Upload
+    description: Gestión de archivos (imágenes de productos)
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Registrar nuevo usuario
+      description: Crea un nuevo usuario en el sistema.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDto'
+            examples:
+              default:
+                value:
+                  email: 'user@example.com'
+                  password: 'Password123!'
+                  fullName: 'John Doe'
+      responses:
+        '201':
+          description: Usuario creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                default:
+                  value:
+                    id: 'a3fbd0c2-9f91-4b4c-8b7f-9c9c3a4d1f23'
+                    email: 'user@example.com'
+                    fullName: 'John Doe'
+                    isActive: true
+                    roles:
+                      - 'user'
+        '400':
+          description: Petición inválida (errores de validación)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationError:
+                  value:
+                    statusCode: 400
+                    message:
+                      - 'email must be an email'
+                      - 'password must be longer than or equal to 6 characters'
+                    error: 'Bad Request'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notAuthenticated:
+                  value:
+                    statusCode: 401
+                    message: 'Unauthorized'
+                    error: 'Unauthorized'
+        '403':
+          description: Prohibido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Iniciar sesión
+      description: Autentica a un usuario y devuelve un token JWT junto con la información del usuario.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUserDto'
+            examples:
+              default:
+                value:
+                  email: 'user@example.com'
+                  password: 'Password123!'
+      responses:
+        '200':
+          description: Login correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              examples:
+                default:
+                  value:
+                    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                    user:
+                      id: 'a3fbd0c2-9f91-4b4c-8b7f-9c9c3a4d1f23'
+                      email: 'user@example.com'
+                      fullName: 'John Doe'
+                      isActive: true
+                      roles:
+                        - 'user'
+        '400':
+          description: Credenciales inválidas o errores de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                badCredentials:
+                  value:
+                    statusCode: 400
+                    message: 'Invalid credentials'
+                    error: 'Bad Request'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Prohibido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/check-status:
+    get:
+      tags:
+        - Auth
+      summary: Comprobar estado de autenticación
+      description: Devuelve el usuario autenticado y el estado del token.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Estado de autenticación correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              examples:
+                default:
+                  value:
+                    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                    user:
+                      id: 'a3fbd0c2-9f91-4b4c-8b7f-9c9c3a4d1f23'
+                      email: 'user@example.com'
+                      fullName: 'John Doe'
+                      isActive: true
+                      roles:
+                        - 'user'
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token inválido o ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                noToken:
+                  value:
+                    statusCode: 401
+                    message: 'Unauthorized'
+                    error: 'Unauthorized'
+        '403':
+          description: Prohibido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/private:
+    get:
+      tags:
+        - Auth
+      summary: Ruta privada de prueba (con AuthGuard por JWT)
+      description: Devuelve información de la petición y del usuario autenticado. Usada como endpoint de prueba.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Acceso autorizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthPrivateResponse'
+              examples:
+                default:
+                  value:
+                    ok: true
+                    message: 'Hola Mundo Private'
+                    user:
+                      id: 'a3fbd0c2-9f91-4b4c-8b7f-9c9c3a4d1f23'
+                      email: 'user@example.com'
+                      fullName: 'John Doe'
+                      isActive: true
+                      roles:
+                        - 'user'
+                    userEmail: 'user@example.com'
+                    rawHeaders:
+                      - 'host: localhost:3000'
+                      - 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                    headers:
+                      host: 'localhost:3000'
+                      authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado (sin token o token inválido)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Prohibido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/private2:
+    get:
+      tags:
+        - Auth
+      summary: Ruta privada con Roles (superUser, admin)
+      description: Endpoint protegido por roles específicos (superUser, admin) usando AuthGuard y UserRoleGuard.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Acceso autorizado para roles válidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+              examples:
+                default:
+                  value:
+                    ok: true
+                    user:
+                      id: 'a3fbd0c2-9f91-4b4c-8b7f-9c9c3a4d1f23'
+                      email: 'admin@example.com'
+                      fullName: 'Admin User'
+                      isActive: true
+                      roles:
+                        - 'admin'
+                        - 'superUser'
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Rol insuficiente para acceder a este recurso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    statusCode: 403
+                    message: 'User does not have the required role'
+                    error: 'Forbidden'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/private3:
+    get:
+      tags:
+        - Auth
+      summary: Ruta privada con decorador @Auth(ValidRoles.admin)
+      description: Endpoint privado que requiere rol de administrador.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Acceso autorizado para administradores
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+              examples:
+                default:
+                  value:
+                    ok: true
+                    user:
+                      id: 'a3fbd0c2-9f91-4b4c-8b7f-9c9c3a4d1f23'
+                      email: 'admin@example.com'
+                      fullName: 'Admin User'
+                      isActive: true
+                      roles:
+                        - 'admin'
+        '400':
+          description: Petición inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado, rol insuficiente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /products:
+    post:
+      tags:
+        - Products
+      summary: Crear un nuevo producto
+      description: Crea un nuevo producto asociado al usuario autenticado.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductDto'
+            examples:
+              default:
+                value:
+                  title: 'T-Shirt Teslo'
+                  price: 29.99
+                  description: 'Camiseta oficial Teslo de algodón orgánico.'
+                  slug: 't-shirt-teslo'
+                  stock: 100
+                  sizes:
+                    - 'M'
+                    - 'L'
+                  gender: 'men'
+                  tags:
+                    - 'tshirt'
+                    - 'teslo'
+                  images:
+                    - 'http://localhost:3000/api/files/product/teslo-shirt-1.jpg'
+      responses:
+        '201':
+          description: Producto creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              examples:
+                default:
+                  value:
+                    id: 'cd533345-f1f3-48c9-a62e-7dc2da50c8f8'
+                    title: 'T-Shirt Teslo'
+                    price: 29.99
+                    description: 'Camiseta oficial Teslo de algodón orgánico.'
+                    slug: 't-shirt-teslo'
+                    stock: 100
+                    sizes:
+                      - 'M'
+                      - 'L'
+                    gender: 'men'
+                    tags:
+                      - 'tshirt'
+                      - 'teslo'
+                    images:
+                      - id: 1
+                        url: 'http://localhost:3000/api/files/product/teslo-shirt-1.jpg'
+                    user:
+                      id: 'a3fbd0c2-9f91-4b4c-8b7f-9c9c3a4d1f23'
+                      email: 'admin@example.com'
+                      fullName: 'Admin User'
+                      isActive: true
+                      roles:
+                        - 'admin'
+        '400':
+          description: Petición inválida (errores de validación o datos duplicados)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado (token ausente o inválido)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Prohibido. Token relacionado o rol insuficiente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recurso no encontrado (por ejemplo, usuario no válido)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Products
+      summary: Listar productos
+      description: Devuelve una lista paginada de productos aplicando filtros opcionales.
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+          required: false
+          description: 'Número máximo de registros a devolver.'
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          required: false
+          description: 'Número de registros a omitir desde el inicio.'
+        - in: query
+          name: gender
+          schema:
+            type: string
+            enum: [men, women, unisex, kid, '']
+          required: false
+          description: 'Filtro por género.'
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+            minimum: 0
+          required: false
+          description: 'Precio mínimo para filtrar.'
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+            minimum: 0
+          required: false
+          description: 'Precio máximo para filtrar.'
+        - in: query
+          name: sizes
+          schema:
+            type: string
+          required: false
+          description: 'Tallas separadas por comas. Ejemplo: XS,S,M'
+        - in: query
+          name: q
+          schema:
+            type: string
+          required: false
+          description: 'Texto de búsqueda.'
+      responses:
+        '200':
+          description: Lista de productos encontrada
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+              examples:
+                default:
+                  value:
+                    - id: 'cd533345-f1f3-48c9-a62e-7dc2da50c8f8'
+                      title: 'T-Shirt Teslo'
+                      price: 29.99
+                      description: 'Camiseta oficial Teslo de algodón orgánico.'
+                      slug: 't-shirt-teslo'
+                      stock: 100
+                      sizes: ['M', 'L']
+                      gender: 'men'
+                      tags: ['tshirt', 'teslo']
+                      images:
+                        - id: 1
+                          url: 'http://localhost:3000/api/files/product/teslo-shirt-1.jpg'
+                      user:
+                        id: 'a3fbd0c2-9f91-4b4c-8b7f-9c9c3a4d1f23'
+                        email: 'admin@example.com'
+                        fullName: 'Admin User'
+                        isActive: true
+                        roles:
+                          - 'admin'
+        '400':
+          description: Parámetros de paginación o filtros inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Prohibido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No se encontraron productos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /products/{term}:
+    get:
+      tags:
+        - Products
+      summary: Obtener un producto por término de búsqueda
+      description: Obtiene un producto por ID, slug o término de búsqueda equivalente.
+      parameters:
+        - in: path
+          name: term
+          required: true
+          description: 'ID (UUID), slug o término de búsqueda.'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Producto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              examples:
+                default:
+                  value:
+                    id: 'cd533345-f1f3-48c9-a62e-7dc2da50c8f8'
+                    title: 'T-Shirt Teslo'
+                    price: 29.99
+                    description: 'Camiseta oficial Teslo de algodón orgánico.'
+                    slug: 't-shirt-teslo'
+                    stock: 100
+                    sizes: ['M', 'L']
+                    gender: 'men'
+                    tags: ['tshirt', 'teslo']
+                    images:
+                      - id: 1
+                        url: 'http://localhost:3000/api/files/product/teslo-shirt-1.jpg'
+                    user:
+                      id: 'a3fbd0c2-9f91-4b4c-8b7f-9c9c3a4d1f23'
+                      email: 'admin@example.com'
+                      fullName: 'Admin User'
+                      isActive: true
+                      roles:
+                        - 'admin'
+        '400':
+          description: Término de búsqueda inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Prohibido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /products/{id}:
+    patch:
+      tags:
+        - Products
+      summary: Actualizar un producto
+      description: Actualiza un producto existente. Solo usuarios con rol administrador pueden acceder.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: 'UUID del producto.'
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductDto'
+            examples:
+              default:
+                value:
+                  price: 34.99
+                  stock: 80
+                  tags:
+                    - 'tshirt'
+                    - 'sale'
+      responses:
+        '200':
+          description: Producto actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Datos inválidos o UUID incorrecto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado, rol insuficiente (solo admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Products
+      summary: Eliminar un producto
+      description: Elimina un producto por UUID. Solo administradores pueden acceder.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: 'UUID del producto.'
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Producto eliminado correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'Product removed successfully'
+        '400':
+          description: UUID inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Acceso denegado (solo admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /files/product/{imageName}:
+    get:
+      tags:
+        - Files - Get and Upload
+      summary: Obtener imagen de producto
+      description: Devuelve una imagen estática de producto por nombre de archivo.
+      parameters:
+        - in: path
+          name: imageName
+          required: true
+          description: 'Nombre del archivo de imagen.'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Imagen devuelta correctamente
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Nombre de archivo inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado (si aplica alguna protección futura)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Prohibido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Imagen no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor o al leer el archivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /files/product:
+    post:
+      tags:
+        - Files - Get and Upload
+      summary: Subir imagen de producto
+      description: Sube una imagen al servidor y devuelve la URL segura del recurso.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Archivo de imagen del producto.
+            examples:
+              default:
+                value:
+                  file: '(binary image file)'
+      responses:
+        '201':
+          description: Imagen subida correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadImageResponse'
+              examples:
+                default:
+                  value:
+                    secureUrl: 'http://localhost:3000/api/files/product/teslo-shirt-1.jpg'
+                    fileName: 'teslo-shirt-1.jpg'
+        '400':
+          description: El archivo no es una imagen válida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notImage:
+                  value:
+                    statusCode: 400
+                    message: 'Make sure that the file is an image'
+                    error: 'Bad Request'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Prohibido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ruta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor o al guardar archivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateUserDto:
+      type: object
+      required:
+        - email
+        - password
+        - fullName
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+          maxLength: 50
+          description: 'Debe tener mayúsculas, minúsculas y números.'
+        fullName:
+          type: string
+          minLength: 1
+
+    LoginUserDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+          maxLength: 50
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 'UUID del usuario.'
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        isActive:
+          type: boolean
+          default: true
+        roles:
+          type: array
+          items:
+            type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: 'Token JWT.'
+        user:
+          $ref: '#/components/schemas/User'
+
+    AuthPrivateResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        userEmail:
+          type: string
+          format: email
+        rawHeaders:
+          type: array
+          items:
+            type: string
+        headers:
+          type: object
+          additionalProperties: true
+
+    CreateProductDto:
+      type: object
+      required:
+        - title
+        - sizes
+        - gender
+      properties:
+        title:
+          type: string
+          description: 'Product title (unique)'
+          minLength: 1
+        price:
+          type: number
+          format: float
+          minimum: 0
+        description:
+          type: string
+        slug:
+          type: string
+        stock:
+          type: integer
+          minimum: 0
+        sizes:
+          type: array
+          items:
+            type: string
+        gender:
+          type: string
+          enum: [men, women, kid, unisex]
+        tags:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: string
+
+    UpdateProductDto:
+      allOf:
+        - $ref: '#/components/schemas/CreateProductDto'
+      description: 'Todos los campos opcionales, derivados de CreateProductDto.'
+
+    ProductImage:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 'Product ID'
+        title:
+          type: string
+          description: 'Product Title'
+        price:
+          type: number
+          format: float
+          description: 'Product price'
+        description:
+          type: string
+          nullable: true
+          description: 'Product description'
+        slug:
+          type: string
+          description: 'Product SLUG - for SEO'
+        stock:
+          type: integer
+          description: 'Product stock'
+        sizes:
+          type: array
+          items:
+            type: string
+          description: 'Product sizes'
+        gender:
+          type: string
+          description: 'Product gender'
+        tags:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImage'
+        user:
+          $ref: '#/components/schemas/User'
+
+    PaginationDto:
+      type: object
+      properties:
+        limit:
+          type: integer
+          description: 'How many rows do you need'
+          default: 10
+        offset:
+          type: integer
+          description: 'How many rows do you want to skip'
+          default: 0
+        gender:
+          type: string
+          enum: [men, women, unisex, kid, '']
+          description: 'Filter results by gender'
+        minPrice:
+          type: number
+          description: 'Precio mínimo para filtrar resultados'
+        maxPrice:
+          type: number
+          description: 'Precio máximo para filtrar resultados'
+        sizes:
+          type: string
+          description: "Filtrar resultados por tallas. Ejemplo: 'XS,S,M'"
+        q:
+          type: string
+          description: 'Query para filtrar resultados'
+
+    UploadImageResponse:
+      type: object
+      properties:
+        secureUrl:
+          type: string
+          description: 'URL pública de la imagen subida'
+        fileName:
+          type: string
+          description: 'Nombre del archivo almacenado en el servidor'
+
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        error:
+          type: string
