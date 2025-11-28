@@ -1,63 +1,242 @@
-# Pcpro Eshop Ropa – Guía de instalación y ejecución
+# 🛍️ Pcpro Eshop Ropa 2025
 
-Proyecto compuesto por **backend NestJS** y **frontend React + Vite**.
+Ecosistema completo de **tienda online de ropa** compuesto por:
 
-- Backend: `backend-teslo-shop`
-- Frontend: `Pcpro-Eshop`
+- **Frontend**: SPA moderna con **React 19 + Vite + TypeScript + TailwindCSS**, consumo de API, autenticación JWT, panel de administración y experiencia de usuario optimizada.
+- **Backend**: API RESTful en **NestJS + PostgreSQL + TypeORM**, con autenticación, gestión de productos, subida de imágenes y WebSockets.
 
-> **Importante:** este proyecto necesita que el backend y el frontend estén corriendo a la vez. El frontend consume la API del backend.
+Pensado como proyecto **realista de portfolio profesional**, válido para:
 
----
-
-## 1. Requisitos previos
-
-- **Node.js** (recomendado ≥ 18.x; el backend indica `"node": "17.x"`, por lo que cualquier versión 18+ LTS suele funcionar bien)
-- **npm** (incluido con Node)
-- **PostgreSQL** instalado y en ejecución
-- Puerto **3000** libre para el backend
-- Puerto **5173** (por defecto Vite) libre para el frontend
+- **Ecommerce / retail de moda** que necesita una base técnica sólida.
+- **Empresas** que buscan ver código de calidad en React + NestJS.
+- **Recruiters y clientes** que quieren evaluar arquitectura, buenas prácticas y trabajo fullstack.
 
 ---
 
-## 2. Estructura del proyecto
+## 📌 Descripción del proyecto
+
+Pcpro Eshop Ropa es una solución **fullstack** que cubre el flujo típico de un ecommerce de ropa:
+
+- Catálogo navegable por categorías/género.
+- Detalle de producto con imágenes y precio.
+- Sistema de autenticación de usuarios con JWT.
+- Panel de administración para gestionar productos.
+- Backend robusto con API documentada (OpenAPI/Swagger) y base de datos **PostgreSQL**.
+
+El enfoque es **educativo y profesional**: código limpio, arquitectura clara y stack moderno alineado con lo que se usa en empresas en 2025.
+
+---
+
+## ✨ Características destacadas
+
+- 🛒 **Frontend ecommerce moderno**
+  - Páginas de **Home**, listado por género, detalle de producto.
+  - Componentes reutilizables (cards, tablas, filtros, paginación, formularios).
+  - Diseño responsive con Tailwind y componentes tipo UI kit.
+
+- 🔐 **Autenticación y seguridad**
+  - Registro y login de usuarios (`/auth/register`, `/auth/login`).
+  - Tokens **JWT** y protección de rutas privadas en el frontend.
+  - Middleware de validación y DTOs en el backend.
+
+- 🧑‍💼 **Panel de administración**
+  - Dashboard con métricas y tarjetas resumen.
+  - Gestión de productos (crear, actualizar, listar, paginar).
+  - Formularios avanzados con `react-hook-form`.
+
+- 🗄️ **Backend escalable y tipado**
+  - Arquitectura modular NestJS (`Auth`, `Products`, `Files`, `Seed`, `MessagesWs`, `Common`).
+  - Base de datos **PostgreSQL** con **TypeORM** y entidades tipadas.
+  - Seed de datos para poblar el catálogo rápidamente.
+
+- 📦 **Gestión de productos e imágenes**
+  - CRUD de productos vía endpoints REST.
+  - Subida y gestión de imágenes de productos (`/files`), almacenamiento estático.
+
+- 📊 **Observabilidad y DX**
+  - Documentación de la API con **Swagger/OpenAPI** (`/api`).
+  - Validación global (`ValidationPipe`) y DTOs con `class-validator`.
+  - Scripts de test, lint y build en backend y frontend.
+
+- 🔌 **Comunicación en tiempo real (WebSockets)**
+  - Módulo `messages-ws` preparado para funcionalidades en tiempo real (chat/notificaciones).
+
+---
+
+## ⚙️ Funcionalidades
+
+### 🛍️ Frontend (React + Vite)
+
+- **Ruteo** con `react-router`:
+  - `HomePage`: vista principal del catálogo.
+  - `GenderPage`: filtro por género/categoría.
+  - `ProductPage`: detalle individual de producto.
+  - Rutas de autenticación: `LoginPage`, `RegisterPage`.
+  - Rutas protegidas mediante `ProtectedRoutes` (solo usuarios autenticados).
+
+- **Layouts y componentes clave**
+  - `ShopLayout`: estructura general de la tienda (header, footer, contenido).
+  - `CustomHeader`, `CustomFooter`, `CustomJumbotron`.
+  - `ProductsGrid`, `ProductsCard`, `FilterSidebar`.
+  - `CustomPagination`, `CustomLogo`, `CustomFullScreenLoading`.
+
+- **Gestión de estado y datos**
+  - `@tanstack/react-query` para fetching, caché y sincronización con la API.
+  - `axios` centralizado en `pcproshopApi.ts` con `VITE_API_URL` como base.
+  - `zustand` para la **store de autenticación** (`auth.store.ts`).
+
+- **Autenticación en frontend**
+  - Acciones en `auth/actions`:
+    - `login.actions.ts`
+    - `register.actions.ts`
+    - `check-auth.actions.ts`
+  - Manejo de tokens, persistencia y verificación de sesión.
+
+- **Panel de administración** (`/admin`)
+  - `DashboardPage` con estadísticas, gráficas y último movimiento.
+  - `AdminProductsPage`: listado de productos para administración.
+  - `AdminProductPage` + `ProductForm`: creación/edición de productos.
+  - Hooks específicos: `useAdminProducts`, `useProduct`.
+
+---
+
+### 🧩 Backend (NestJS + PostgreSQL)
+
+- **Módulos principales**
+  - `AuthModule`: registro, login, comprobación de estado JWT, roles.
+  - `ProductsModule`: CRUD de productos, paginación, búsqueda.
+  - `FilesModule`: subida y entrega de archivos (imágenes de producto).
+  - `SeedModule`: seed de base de datos para entorno de desarrollo.
+  - `MessagesWsModule`: gateway WebSocket para mensajes en tiempo real.
+  - `CommonModule`: DTOs comunes (como `pagination.dto.ts`).
+
+- **Configuración de infraestructura**
+  - `ConfigModule.forRoot()` leyendo de `.env`.
+  - `TypeOrmModule.forRoot()` con conexión PostgreSQL:
+    - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`.
+    - `autoLoadEntities: true` y `synchronize: true` (ideal para desarrollo).
+  - Servido de archivos estáticos con `ServeStaticModule`.
+
+- **Autenticación y seguridad**
+  - `AuthController`, `AuthService`, `JwtStrategy`.
+  - Decoradores personalizados: `@Auth()`, `@GetUser()`, `@RoleProtected()`.
+  - Soporte de roles (`valid-roles.ts`) y guard de roles (`user-role.guard.ts`).
+
+- **Productos**
+  - Entidades: `Product` y `ProductImage` (relación 1-N).
+  - DTOs: `CreateProductDto`, `UpdateProductDto`.
+  - Endpoints REST para listar, crear, actualizar y eliminar productos.
+
+- **Subida de archivos**
+  - `FilesController`, `FilesService`.
+  - Helpers: `fileFilter.helper.ts`, `fileNamer.helper.ts`.
+  - Integración con `multer`/NestJS para subida y almacenamiento de imágenes.
+
+- **WebSockets**
+  - `MessagesWsGateway` y `MessagesWsService` para gestionar eventos en tiempo real.
+
+- **Documentación de API**
+  - `openapi.yaml` describiendo endpoints de **Auth**, **Products** y **Files**.
+  - `SwaggerModule` montado en `/api` para exploración interactiva.
+
+---
+
+## 🔧 Tecnologías utilizadas
+
+- ⚛️ **Frontend**
+  - ⚛️ React 19
+  - 🧩 TypeScript
+  - ⚡ Vite
+  - 🎨 TailwindCSS 4
+  - 🧠 Zustand (gestión de estado)
+  - 🔁 @tanstack/react-query
+  - 📡 axios
+  - 🧱 Radix UI + componentes UI personalizados
+
+- 🐘 **Backend**
+  - 🧱 NestJS 10
+  - 🐘 PostgreSQL
+  - 🧮 TypeORM
+  - 🔑 JWT (JSON Web Tokens)
+  - 🧪 Jest (tests)
+  - 📜 Swagger / OpenAPI
+
+- 🛠️ **Herramientas y ecosistema**
+  - 📦 npm
+  - 🧹 ESLint, Prettier
+  - 🐳 Docker (archivo `docker-compose.yaml` para base de datos/postgres)
+
+---
+
+## 📁 Estructura del proyecto
 
 ```text
 07-eshop-ropa/
-  backend-teslo-shop/   # API NestJS + PostgreSQL
-  Pcpro-Eshop/          # Frontend React + Vite
+├── Pcpro-Eshop/              # Frontend React + Vite
+│   ├── src/
+│   │   ├── admin/            # Panel de administración (páginas, hooks, componentes)
+│   │   ├── auth/             # Páginas y lógica de autenticación
+│   │   ├── shop/             # Páginas y componentes de la tienda pública
+│   │   ├── components/       # UI genérica, rutas protegidas, layout
+│   │   ├── api/              # Cliente axios (`pcproshopApi.ts`)
+│   │   ├── interfaces/       # Tipos/contratos de datos
+│   │   ├── lib/              # Utilidades (formatos, helpers)
+│   │   └── TesloShopApp.tsx  # Componente raíz de la SPA
+│   ├── public/               # Recursos estáticos frontend
+│   ├── vite.config.ts        # Configuración Vite + Tailwind + alias `@`
+│   └── package.json          # Dependencias frontend
+│
+└── backend-teslo-shop/       # Backend NestJS (Teslo API)
+    ├── src/
+    │   ├── auth/             # Autenticación, usuarios, JWT, roles
+    │   ├── products/         # Lógica y endpoints de productos
+    │   ├── files/            # Gestión de archivos/imágenes
+    │   ├── seed/             # Seed de datos
+    │   ├── common/           # DTOs y utilidades comunes
+    │   ├── messages-ws/      # WebSockets
+    │   ├── app.module.ts     # Módulo raíz
+    │   └── main.ts           # Bootstrap de la app NestJS
+    ├── static/               # Archivos estáticos (imágenes productos, uploads)
+    ├── postgres/             # Configuración de base/postgres para docker
+    ├── openapi.yaml          # Especificación OpenAPI de la API
+    ├── docker-compose.yaml   # Servicios (p.ej. PostgreSQL)
+    └── package.json          # Dependencias backend
 ```
 
 ---
 
-## 3. Configuración del backend (`backend-teslo-shop`)
+## 🚀 Instrucciones de uso
 
-Ruta: `./backend-teslo-shop`
+### 1️⃣ Requisitos previos
 
-### 3.1. Instalar dependencias
+- Node.js ≥ 18.x
+- npm
+- PostgreSQL en ejecución
+- Puertos libres:
+  - **3000** para el backend
+  - **5173** para el frontend (por defecto Vite)
 
-En una terminal, ubicarse en la carpeta `backend-teslo-shop` y ejecutar:
+Opcional pero recomendado:
+
+- Docker / Docker Compose (para levantar PostgreSQL desde `docker-compose.yaml`).
+
+---
+
+### 2️⃣ Backend: instalación y configuración
+
+Ir a la carpeta del backend:
 
 ```bash
+cd backend-teslo-shop
 npm install
 ```
 
-### 3.2. Configurar variables de entorno
-
-1. En la carpeta `backend-teslo-shop` tienes:
-
-   - `.env.template`
-   - `.env` (puede existir ya, pero se recomienda revisar)
-
-2. **Si no existe `.env` o quieres partir de cero:**
-
-   - Copia/renombra `/.env.template` a `/.env`.
-
-3. Abre el archivo `.env` y ajusta los valores según tu entorno de PostgreSQL:
+Crear el archivo `.env` a partir del `.env.template` (o editar el existente):
 
 ```env
 STAGE=dev
 
-DB_PASSWORD=MySecr3tPassWord@as2
+DB_PASSWORD=yourSecurePassword
 DB_NAME=TesloDB
 DB_HOST=localhost
 DB_PORT=5432
@@ -66,119 +245,246 @@ DB_USERNAME=postgres
 PORT=3000
 HOST_API=http://localhost:3000/api
 
-JWT_SECRET=Est3EsMISE3Dsecreto32s
+JWT_SECRET=yourVerySecretJwtKey
 ```
 
-- **STAGE**: entorno actual, normalmente `dev`.
-- **DB_HOST**: servidor de PostgreSQL, normalmente `localhost`.
-- **DB_PORT**: puerto de PostgreSQL, por defecto `5432`.
-- **DB_NAME**: nombre de la base de datos que usarás para el proyecto.
-- **DB_USERNAME** / **DB_PASSWORD**: credenciales de acceso a tu base de datos.
-- **PORT**: puerto en el que se levantará el backend NestJS (por defecto `3000`).
-- **HOST_API**: URL base de la API (debe apuntar al mismo host/puerto donde corre NestJS).
-- **JWT_SECRET**: cadena secreta usada para firmar los tokens JWT (cámbiala por una propia en producción).
+- Asegúrate de que la base de datos `TesloDB` existe en tu PostgreSQL.
+- Ajusta usuario/contraseña según tu entorno.
 
-> **Nota:** Asegúrate de que la base de datos `DB_NAME` existe en PostgreSQL o que tu configuración de TypeORM permita crearla/actualizarla.
-
-### 3.3. Ejecutar el backend en desarrollo
-
-Con la base de datos PostgreSQL corriendo y el `.env` configurado, en `backend-teslo-shop` ejecuta:
+Levantar el backend en desarrollo:
 
 ```bash
 npm run start:dev
 ```
 
-Esto levantará el servidor NestJS en:
+La API quedará disponible en:
 
-- API base: `http://localhost:3000/api`
+- `http://localhost:3000/api`
+- Documentación Swagger: `http://localhost:3000/api` (UI Swagger configurada en el mismo prefijo).
 
-También dispones de otros scripts útiles:
+Para build/producción:
 
 ```bash
-npm run build      # compilar a dist
-npm run start      # ejecutar versión compilada (dist/main)
-npm run start:prod # modo producción (requiere build previa)
+npm run build
+npm run start       # o npm run start:prod
 ```
 
 ---
 
-## 4. Configuración del frontend (`Pcpro-Eshop`)
+### 3️⃣ Frontend: instalación y configuración
 
-Ruta: `./Pcpro-Eshop`
-
-### 4.1. Instalar dependencias
-
-En otra terminal, ubicarse en la carpeta `Pcpro-Eshop` y ejecutar:
+Ir a la carpeta del frontend:
 
 ```bash
+cd Pcpro-Eshop
 npm install
 ```
 
-### 4.2. Configurar variables de entorno del frontend
-
-En `Pcpro-Eshop` tienes un archivo `.env` (si no existe, créalo). Debe contener al menos:
+Crear/editar el archivo `.env` del frontend:
 
 ```env
 VITE_API_URL=http://localhost:3000/api
 ```
 
-- **VITE_API_URL**: debe apuntar al endpoint público de la API del backend. Si cambias el puerto o el host del backend, actualiza también este valor.
-
-> **Importante:** en Vite todas las variables de entorno accesibles desde el frontend deben empezar por `VITE_`.
-
-### 4.3. Ejecutar el frontend en desarrollo
-
-Con el backend corriendo y el `.env` configurado, en `Pcpro-Eshop` ejecuta:
+Levantar el frontend en desarrollo:
 
 ```bash
 npm run dev
 ```
 
-Vite mostrará en la terminal la URL local, normalmente:
+Abrir el navegador en la URL que muestre Vite (normalmente):
 
-- Frontend: `http://localhost:5173`
-
-Abre esa URL en el navegador.
+- `http://localhost:5173`
 
 ---
 
-## 5. Orden recomendado para levantar todo el proyecto
+### 4️⃣ Flujo de trabajo recomendado
 
-1. **Iniciar PostgreSQL** y asegurarte de que la base de datos configurada existe.
-2. **Configurar backend**:
-   - Renombrar `backend-teslo-shop/.env.template` → `backend-teslo-shop/.env` (si es necesario).
-   - Ajustar las variables `DB_*`, `HOST_API`, `PORT`, `JWT_SECRET`, etc.
-3. **Levantar backend**:
-
-   En `backend-teslo-shop`:
-
-   ```bash
-   npm install
-   npm run start:dev
-   ```
-
-4. **Configurar frontend**:
-   - Crear/editar `Pcpro-Eshop/.env` con:
-     ```env
-     VITE_API_URL=http://localhost:3000/api
-     ```
-5. **Levantar frontend**:
-
-   En `Pcpro-Eshop`:
-
-   ```bash
-   npm install
-   npm run dev
-   ```
-
-6. Abrir el navegador en la URL que indica Vite, por ejemplo `http://localhost:5173`.
+1. Levantar PostgreSQL (local o vía Docker).
+2. Configurar `.env` del backend y hacer `npm run start:dev` en `backend-teslo-shop`.
+3. Configurar `.env` del frontend y hacer `npm run dev` en `Pcpro-Eshop`.
+4. Abrir el navegador y navegar por la tienda, registrarse, iniciar sesión y acceder al panel de administración.
 
 ---
 
-## 6. Notas adicionales
+## 🧪 Ejemplos de uso de la API
 
-- No subas jamás los archivos `.env` a Git (ya está contemplado normalmente en `.gitignore`).
-- Si cambias el puerto del backend (`PORT` en el `.env` del backend), recuerda actualizar:
-  - `HOST_API` en el mismo `.env` del backend.
-  - `VITE_API_URL` en el `.env` del frontend.
-- Si vas a desplegar en producción, usa variables de entorno seguras y valores distintos a los de desarrollo.
+> **Base URL (desarrollo):** `http://localhost:3000/api`
+
+### 🔐 Autenticación
+
+- **POST** `/auth/register`
+
+```http
+POST /auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "Password123!",
+  "fullName": "John Doe"
+}
+```
+
+- **POST** `/auth/login`
+
+```http
+POST /auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "Password123!"
+}
+```
+
+Respuesta típica:
+
+```json
+{
+  "token": "<jwt_token>",
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "fullName": "John Doe",
+    "isActive": true,
+    "roles": ["user"]
+  }
+}
+```
+
+- **GET** `/auth/check-status`
+
+Requiere cabecera:
+
+```http
+Authorization: Bearer <jwt_token>
+```
+
+---
+
+### 🧵 Productos
+
+- **GET** `/products`
+
+Lista productos con paginación (parámetros opcionales como `limit`, `offset`):
+
+```http
+GET /products?limit=10&offset=0 HTTP/1.1
+Host: localhost:3000
+```
+
+- **POST** `/products`
+
+Crear un producto (requiere auth y rol adecuado):
+
+```http
+POST /products HTTP/1.1
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "title": "Camiseta básica unisex",
+  "price": 19.99,
+  "description": "Camiseta de algodón 100%",
+  "slug": "camiseta-basica-unisex",
+  "stock": 50,
+  "sizes": ["S", "M", "L"],
+  "gender": "unisex",
+  "tags": ["camiseta", "básico"],
+  "images": [
+    "https://example.com/images/camiseta1.jpg"
+  ]
+}
+```
+
+---
+
+### 🖼️ Subida de imágenes
+
+- **POST** `/files/product`
+
+Subida de imagen de producto mediante `multipart/form-data`:
+
+```http
+POST /files/product HTTP/1.1
+Authorization: Bearer <jwt_token>
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="producto.jpg"
+Content-Type: image/jpeg
+
+<binario>
+------WebKitFormBoundary--
+```
+
+La respuesta devolverá la URL de acceso a la imagen subida.
+
+---
+
+## 📞 Soporte y Contacto
+
+### 🆘 Obtener ayuda
+
+- 📅 **Año**: 2025  
+- 📨 **Autor**: Francisco José Herreros (franHR)  
+- 📧 **Email**: [desarrollo@pcprogramacion.es](mailto:desarrollo@pcprogramacion.es)  
+- 🌐 **Web**: [https://www.pcprogramacion.es](https://www.pcprogramacion.es)  
+- 💼 **LinkedIn**: [Francisco José Herreros](https://www.linkedin.com/in/francisco-jose-herreros)  
+- 🖥️ **Portfolio**: [https://franhr.pcprogramacion.es/](https://franhr.pcprogramacion.es/)  
+
+---
+
+## 🖼️ Imágenes del proyecto
+
+Aquí puedes añadir capturas de pantalla del frontend y del panel de administración, por ejemplo:
+
+- Página de inicio con grid de productos.
+- Detalle de producto.
+- Vista de login/registro.
+- Panel de administración con la lista de productos.
+
+```md
+![Home de Pcpro Eshop](./screenshots/home.png)
+![Detalle de producto](./screenshots/product-detail.png)
+![Panel de administración](./screenshots/admin-dashboard.png)
+```
+
+> Crea la carpeta `screenshots/` en la raíz y añade tus propias imágenes para completar esta sección.
+
+---
+
+## 🛡️ Licencia
+
+### Español
+
+Copyright (c) 2025 Francisco José Herreros (franHR) / PCProgramación
+
+Todos los derechos reservados.
+
+Este software es propiedad de Francisco José Herreros (franHR), desarrollador de PCProgramación (https://www.pcprogramacion.es). No está permitido copiar, modificar, distribuir o utilizar este código, ni total ni parcialmente, sin una autorización expresa y por escrito del autor.
+
+El acceso a este repositorio tiene únicamente fines de revisión, auditoría o demostración, y no implica la cesión de ningún derecho de uso o explotación.
+
+Para solicitar una licencia o permiso de uso, contacta con: desarrollo@pcprogramacion.es
+
+### English
+
+Copyright (c) 2025 Francisco José Herreros (franHR) / PCProgramación
+
+All rights reserved.
+
+This software is the property of Francisco José Herreros (franHR), developer of PCProgramación (https://www.pcprogramacion.es). It is not allowed to copy, modify, distribute or use this code, either totally or partially, without express and written authorization from the author.
+
+Access to this repository has only review, audit or demonstration purposes, and does not imply the transfer of any right of use or exploitation.
+
+To request a license or permission to use, contact: desarrollo@pcprogramacion.es
+
+---
+
+## 🔝 Hashtags recomendados para LinkedIn
+
+Puedes usar estos hashtags al compartir el proyecto en LinkedIn, Instagram u otras redes:
+
+`#React` `#TypeScript` `#Vite` `#TailwindCSS` `#NestJS` `#PostgreSQL` `#FullStackDeveloper` `#WebDevelopment` `#Ecommerce` `#JavaScript` `#NodeJS` `#APIRest` `#Portfolio` `#PCProgramacion` `#DesarrolloWeb` `#Programacion` `#SoftwareDevelopment` `#CleanCode` `#Frontend` `#Backend`
