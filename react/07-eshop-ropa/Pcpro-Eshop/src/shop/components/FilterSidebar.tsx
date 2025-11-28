@@ -9,7 +9,7 @@ export const FilterSidebar = () => {
     const [searchParams, setSearchParams] = useSearchParams()
 
     const currentSizes = searchParams.get('sizes')?.split(',') || []
-    const currentPrice = searchParams.get('prices') || 'any'
+    const currentPrice = searchParams.get('price') || 'any'
 
     const handleSizeChanged = (size: string) => {
         const newSizes = currentSizes.includes(size)
@@ -23,7 +23,7 @@ export const FilterSidebar = () => {
 
     const handlePriceChange = (price: string) => {
         searchParams.set('page', '1')
-        searchParams.set('prices', price)
+        searchParams.set('price', price)
         setSearchParams(searchParams)
     }
 
